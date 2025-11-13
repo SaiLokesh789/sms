@@ -40,13 +40,11 @@ pipeline {
             }
         }
 
-        /* Optional:
         stage('Run Container') {
             steps {
                 sh "docker run -d --name ${APP_NAME} -p 8100:8100 ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
-        */
 
         stage('K8s Deployment') {
             steps {
