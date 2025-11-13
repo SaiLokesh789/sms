@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     environment {
         APP_NAME = "studentmarkservice"
         APP_NAMESPACE = "${APP_NAME}-ns"
@@ -9,52 +10,67 @@ pipeline {
         NODE_PORT = 30081
         REPLICA_COUNT = 2
     }
+
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/somanadha/studentmarkservice.git'
             }
         }
-        stage('Build') {
+
+        stage('Cleanup Old Container (if exists)') {
             steps {
-                // Build docker image using Dockerfile
-                bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Dockerfile ."
+                sh '''
+                    if [ "$(docker ps -aq -f name=${APP_NAME})" ]; then
+                        echo "Container exists — stopping & removing..."
+                        docker stop ${APP_NAME} || true
+                        docker rm ${APP_NAME} || true
+                    else
+                        echo "No old container found."
+                    fi
+                '''
             }
         }
-        /*
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Dockerfile ."
+            }
+        }
+
+        /* Optional:
         stage('Run Container') {
             steps {
-                script {
-                    // Run docker container instance
-                    bat "docker run -d --name ${APP_NAME} -p 8100:8100 ${IMAGE_NAME}:${IMAGE_TAG}"
-                }
+                sh "docker run -d --name ${APP_NAME} -p 8100:8100 ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
         */
-        stage('K8s Container Deployment') {
+
+        stage('K8s Deployment') {
             steps {
                 script {
-                    withEnv(["KUBECONFIG=c:\\users\\test\\.kube\\config"]) {
-                        // Replace variables in YAML and create concrete files:
-                        bat "envsubst < k8s/namespace-template.yaml > k8s/namespace.yaml"
-                        bat "envsubst < k8s/deployment-template.yaml > k8s/deployment.yaml"
-                        bat "envsubst < k8s/service-template.yaml > k8s/service.yaml"
+                    withEnv(["KUBECONFIG=$HOME/.kube/config"]) {
 
-                        // Apply manifests
-                        bat "kubectl apply -f k8s/namespace.yaml --validate=false"
-                        bat "kubectl apply -f k8s/deployment.yaml --validate=false"
-                        bat "kubectl apply -f k8s/service.yaml --validate=false"
+                        sh "envsubst < k8s/namespace-template.yaml > k8s/namespace.yaml"
+                        sh "envsubst < k8s/deployment-template.yaml > k8s/deployment.yaml"
+                        sh "envsubst < k8s/service-template.yaml > k8s/service.yaml"
+
+                        sh "kubectl apply -f k8s/namespace.yaml --validate=false"
+                        sh "kubectl apply -f k8s/deployment.yaml --validate=false"
+                        sh "kubectl apply -f k8s/service.yaml --validate=false"
                     }
                 }
             }
         }
     }
+
     post {
         success {
-            echo "✅ Checkout, Build, Dockerize & Deploy completed successfully!"
+            echo "✔ Completed: Checkout → Build → Deploy"
         }
         failure {
-            echo "❌ Build failed!"
+            echo "❌ Pipeline Failed"
         }
     }
 }
