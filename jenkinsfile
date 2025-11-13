@@ -11,6 +11,7 @@ pipeline {
         REPLICA_COUNT = 2
     }
 
+
     stages {
 
         stage('Checkout') {
