@@ -16,7 +16,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/somanadha/studentmarkservice.git'
+                git branch: 'main', url: 'https://github.com/SaiLokesh789/employeeprofilemanagement'
             }
         }
 
