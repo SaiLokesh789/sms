@@ -11,7 +11,6 @@ pipeline {
         REPLICA_COUNT = 2
     }
 
-
     stages {
 
         stage('Checkout') {
@@ -23,7 +22,7 @@ pipeline {
         stage('Cleanup Old Container (if exists)') {
             steps {
                 sh '''
-                    if [ "$(docker ps -aq -f name=${APP_NAME})" ]; thenx
+                    if [ "$(docker ps -aq -f name=${APP_NAME})" ]; then
                         echo "Container exists — stopping & removing..."
                         docker stop ${APP_NAME} || true
                         docker rm ${APP_NAME} || true
@@ -42,7 +41,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh "docker run -d --name ${APP_NAME} -p 8100:8100 ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh "docker run -d --name ${APP_NAME} -p ${APP_PORT}:${APP_PORT} ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
