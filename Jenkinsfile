@@ -16,14 +16,14 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/SaiLokesh789/employeeprofilemanagement'
+                git branch: 'main', url: 'https://github.com/SaiLokesh789/sms.git'
             }
         }
 
         stage('Cleanup Old Container (if exists)') {
             steps {
                 sh '''
-                    if [ "$(docker ps -aq -f name=${APP_NAME})" ]; then
+                    if [ "$(docker ps -aq -f name=${APP_NAME})" ]; thenx
                         echo "Container exists — stopping & removing..."
                         docker stop ${APP_NAME} || true
                         docker rm ${APP_NAME} || true
