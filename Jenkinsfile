@@ -15,7 +15,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/SaiLokesh789/sms.git'
+                git branch: 'master', url: 'https://github.com/SaiLokesh789/sms.git'
             }
         }
 
